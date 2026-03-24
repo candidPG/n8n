@@ -9,7 +9,7 @@ on:
 env:
   ACR_LOGIN_SERVER: ${{ secrets.ACR_NAME }}.azurecr.io
   IMAGE_NAME: n8n-custom
-  NAMESPACE: n8n
+  NAMESPACE: n8n-embed
   DEPLOYMENT_NAME: n8n
 
 jobs:
