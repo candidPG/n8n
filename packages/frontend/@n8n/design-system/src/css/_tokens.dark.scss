@@ -1,11 +1,13 @@
 @mixin theme {
-// Only overridden tokens go here
+    // Only overridden tokens go here
 }
+
 body[data-theme='dark'] {
-@include theme;
+    @include theme;
 }
+
 @media (prefers-color-scheme: dark) {
-body:not([data-theme]) {
-@include theme;
-}
+    body:not([data-theme]) {
+        @include theme;
+    }
 }
