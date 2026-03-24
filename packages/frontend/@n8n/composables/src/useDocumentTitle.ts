@@ -1,7 +1,7 @@
 import { ref, type Ref } from 'vue';
 
 const DEFAULT_TITLE = 'Candid';
-const DEFAULT_TAGLINE = 'Workflows';
+const DEFAULT_TAGLINE = 'Candid Workflows';
 
 export type WorkflowTitleStatus =
 	| 'EXECUTING'
