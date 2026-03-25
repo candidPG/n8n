@@ -403,4 +403,28 @@ useKeybindings({
 .scrollAreaWrapperWithTopBorder {
 	border-top: var(--border);
 }
+
+# CANDID
+.logoItem {
+	display: flex;
+	justify-content: space-between;
+	height: $header-height;
+	line-height: $header-height;
+	margin: 0 !important;
+	border-radius: 0 !important;
+	border-bottom: var(--border-width-base) var(--border-style-base) var(--color-background-xlight);
+	cursor: default;
+
+	&:hover, &:global(.is-active):hover {
+		background-color: initial !important;
+	}
+
+	* { vertical-align: middle; }
+	.icon {
+		height: 18px;
+		position: relative;
+		left: 6px;
+	}
+}
+# CANDID
 </style>
