@@ -22,33 +22,23 @@
 
 /* Login logo */
 [class*="_logo_"] {
-  width: 51px !important;
-  height: 12px !important;
+  /*width: 51px !important;*/
+  height: 15px !important;
   margin-left: 5px !important;
-  margin-top: 4px !important;
 }
-[class*="_logo_"] image {
-  width: 51px !important;
-  height: 12px !important;
+[class*="_logoText_"] image {
+  /*width: 51px !important;*/
+  height: 15px !important;
 }
 
 /* Side bar menu logo - Light */
-#side-menu [class*="_logoText_"] {
-  width: 51px !important;
-  height: 12px !important;
-  margin-left: 5px !important;
-  margin-top: 4px !important;
-}
 #side-menu [class*="_logoText_"] image {
   width: 51px !important;
-  height: 12px !important;
+  height: 15px !important;
 }
 
-/* Side bar menu logo - Dark */
-/*[data-theme="dark"] side-menu [class*="_logoText_"] {
-  
-}*/
+/* Side bar menu logo / Login logo - Dark */
+[data-theme="dark"] [class*="_logo_"] image
 [data-theme="dark"] [class*="_logoText_"] image {
   filter: brightness(0) invert(1);
 }
-
