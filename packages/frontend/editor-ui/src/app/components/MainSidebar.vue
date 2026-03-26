@@ -404,8 +404,8 @@ useKeybindings({
 	border-top: var(--border);
 }
 
-# CANDID #
-# Side bar menu logo
+/* CANDID */
+/* Side bar menu logo */
 ._logo_1bvb0_143 ._logoText_bk7tg_131 {
 	width: 51px;
 	height: 12px;
@@ -416,5 +416,5 @@ useKeybindings({
 	width: 51px;
 	height: 12px;
 }
-# CANDID #
+/* CANDID */
 </style>
