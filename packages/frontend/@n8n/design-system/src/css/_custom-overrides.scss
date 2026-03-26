@@ -9,6 +9,12 @@
   // ... other custom variables
 }
 
+@mixin theme {
+	--color-primary-h: 204;
+	--color-primary-s: 100%;
+	--color-primary-l: 50%;
+}
+
 :root {
   @include candid-theme;
 }
