@@ -2,6 +2,8 @@ name: Build & Deploy n8n to AKS
 
 on:
   push:
+    paths-ignore:
+      - '.github/workflows/**'
     branches:
       - dev
       - master
@@ -27,7 +29,7 @@ jobs:
     steps:
       - name: Call start Webhook
         run: |
-          curl -X GET "https://api.gumloop.com/api/v1/start_pipeline?api_key=472685a0fc034b9ba85e6425ca723c03&user_id=6crr053PCaW5nH9YzRbirMmmDjg1&saved_item_id=9SfFBmWQsMfCqidT341jjq" \
+          curl -X GET "https://devn8n.candidplatform.ai/webhook/1b6108ba-6ba0-4a34-95f6-12127cae9a3b?status=started" \
             --fail \
             --silent \
             --show-error
@@ -139,7 +141,7 @@ jobs:
           echo ""
       - name: Call Cpmplete Webhook
         run: |
-          curl -X GET "https://api.gumloop.com/api/v1/start_pipeline?api_key=472685a0fc034b9ba85e6425ca723c03&user_id=6crr053PCaW5nH9YzRbirMmmDjg1&saved_item_id=wjr4YMpmpXsAzpz9TPAToc" \
+          curl -X GET "https://devn8n.candidplatform.ai/webhook/1b6108ba-6ba0-4a34-95f6-12127cae9a3b?status=finished" \
             --fail \
             --silent \
             --show-error
