@@ -1,39 +1,33 @@
 // Custom brand overrides  
 // This file is not tracked by upstream n8n repository  
-  
+
+// Combine both mixins into one
 @mixin candid-theme {
-  // Your existing custom color overrides
-  --color--primary: var(--color--blue-500);
-  --color--primary-tint-1: var(--color--blue-400);
-
-  // ... other custom variables
+  // Primary color overrides (HSL values)
+  --color-primary-h: 204;
+  --color-primary-s: 100%;
+  --color-primary-l: 50%;
+  
+  // Color aliases
+  --color--primary: hsl(204, 100%, 50%);
+  --color--primary-tint-1: hsl(204, 100%, 60%);
 }
 
-@mixin theme {
-	--color-primary-h: 204;
-	--color-primary-s: 100%;
-	--color-primary-l: 50%;
-}
-
+// Apply the mixin to :root
 :root {
   @include candid-theme;
 }
 
-// Component-specific overrides
-:global {
-  body {
-    border: 5px solid red !important;
-  }
+// Component-specific overrides - NO :global needed
+/* Side bar menu logo */
+#side-menu [class*="_logoText_"] {
+  width: 51px !important;
+  height: 12px !important;
+  margin-left: 5px !important;
+  margin-top: 4px !important;
+}
 
-  // Side bar menu logo
-  #side-menu ._logoText_bk7tg_131 {
-    width: 51px;
-    height: 12px;
-    margin-left: 5px;
-    margin-top: 4px;
-  }
-  #side-menu ._logoText_bk7tg_131 img {
-    width: 51px;
-    height: 12px;
-  }
+#side-menu [class*="_logoText_"] img {
+  width: 51px !important;
+  height: 12px !important;
 }
