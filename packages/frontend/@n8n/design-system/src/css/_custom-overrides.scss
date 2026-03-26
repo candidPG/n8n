@@ -1,11 +1,30 @@
-/* Side bar menu logo */
-._logo_1bvb0_143 ._logoText_bk7tg_131 {
-	width: 51px;
-	height: 12px;
-	margin-left: 5px;
-	margin-top: 4px;
-}
-._logo_1bvb0_143 ._logoText_bk7tg_131 img {
-	width: 51px;
-	height: 12px;
+// Custom brand overrides  
+// This file is not tracked by upstream n8n repository  
+  
+@mixin custom-theme {  
+  // Your existing custom color overrides  
+  --color--primary: var(--color--blue-500);  
+  --color--primary-tint-1: var(--color--blue-400);  
+    
+  // ... other custom variables  
+}  
+  
+:root {  
+  @include custom-theme;  
+}  
+  
+// Component-specific overrides  
+:global {  
+  /* Side bar menu logo - more stable selector */  
+  [class*="_logo_"] [class*="_logoText_"] {  
+    width: 51px !important;  
+    height: 12px !important;  
+    margin-left: 5px !important;  
+    margin-top: 4px !important;  
+  }  
+    
+  [class*="_logo_"] [class*="_logoText_"] img {  
+    width: 51px !important;  
+    height: 12px !important;  
+  }  
 }
