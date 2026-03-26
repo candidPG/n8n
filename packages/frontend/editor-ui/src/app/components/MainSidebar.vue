@@ -403,18 +403,4 @@ useKeybindings({
 .scrollAreaWrapperWithTopBorder {
 	border-top: var(--border);
 }
-
-/* CANDID */
-/* Side bar menu logo */
-._logo_1bvb0_143 ._logoText_bk7tg_131 {
-	width: 51px;
-	height: 12px;
-	margin-left: 5px;
-	margin-top: 4px;
-}
-._logo_1bvb0_143 ._logoText_bk7tg_131 img {
-	width: 51px;
-	height: 12px;
-}
-/* CANDID */
 </style>
