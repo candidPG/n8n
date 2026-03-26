@@ -21,6 +21,10 @@
 
 // Component-specific overrides
 :global {
+  body {
+    border: 5px solid red !important;
+  }
+
   // Side bar menu logo
   #side-menu ._logoText_bk7tg_131 {
     width: 51px;
