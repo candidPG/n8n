@@ -25,15 +25,22 @@
   height: 20px !important;
 }
 [class*="_logoText_"] image {
-  width: 51px !important;
+  width: 85px !important;
   height: 15px !important;
 }
 
 
 /* Side bar menu logo - Light */
+#side-menu [class*="_logoText_"] {
+  width: 65px !important;
+}
 #side-menu [class*="_logoText_"] image {
-  width: auto !important;
+  width: 65px !important;
   height: 15px !important;
+}
+._logoText_bk7tg_131 {
+  margin-left: 5px !important;
+  margin-top: 5px;
 }
 
 /* Side bar menu logo / Login logo - Dark */
