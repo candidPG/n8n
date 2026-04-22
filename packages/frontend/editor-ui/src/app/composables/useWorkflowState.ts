@@ -12,7 +12,6 @@ import type {
 } from '@/features/execution/executions/executions.types';
 import { useUIStore } from '@/app/stores/ui.store';
 import { useWorkflowsStore } from '@/app/stores/workflows.store';
-import { useWorkflowsListStore } from '@/app/stores/workflowsList.store';
 import { useBuilderStore } from '@/features/ai/assistant/builder.store';
 import { getPairedItemsMapping } from '@/app/utils/pairedItemUtils';
 import {
@@ -50,7 +49,6 @@ export const workflowStateEventBus = createEventBus<WorkflowStateBusEvents>();
 
 export function useWorkflowState() {
 	const ws = useWorkflowsStore();
-	const workflowsListStore = useWorkflowsListStore();
 	const workflowStateStore = useWorkflowStateStore();
 	const uiStore = useUIStore();
 	const rootStore = useRootStore();
@@ -59,18 +57,6 @@ export function useWorkflowState() {
 	////
 	// Workflow editing state
 	////
-
-	function setWorkflowName(data: { newName: string; setStateDirty: boolean }) {
-		if (data.setStateDirty) {
-			uiStore.markStateDirty('metadata');
-		}
-		ws.workflow.name = data.newName;
-		ws.workflowObject.name = data.newName;
-
-		if (ws.workflow.id && workflowsListStore.workflowsById[ws.workflow.id]) {
-			workflowsListStore.workflowsById[ws.workflow.id].name = data.newName;
-		}
-	}
 
 	/** @deprecated Use `workflowDocumentStore.removeAllConnections()` instead. */
 	function removeAllConnections(data: { setStateDirty: boolean }): void {
@@ -88,18 +74,17 @@ export function useWorkflowState() {
 			uiStore.markStateDirty();
 		}
 
+		const workflowDocumentStore = useWorkflowDocumentStore(
+			createWorkflowDocumentId(ws.workflow.id),
+		);
+
 		if (data.removePinData) {
-			if (ws.workflow.id) {
-				const workflowDocumentStore = useWorkflowDocumentStore(
-					createWorkflowDocumentId(ws.workflow.id),
-				);
-				workflowDocumentStore.setPinData({});
-			}
+			workflowDocumentStore.setPinData({});
 		}
 
 		ws.workflow.nodes.splice(0, ws.workflow.nodes.length);
 		ws.workflowObject.setNodes(ws.workflow.nodes);
-		ws.nodeMetadata = {};
+		workflowDocumentStore.setAllNodeMetadata({});
 	}
 
 	function setWorkflowExecutionData(workflowResultData: IExecutionResponse | null) {
@@ -161,8 +146,6 @@ export function useWorkflowState() {
 			workflowData.name = name || DEFAULT_NEW_WORKFLOW_NAME;
 		}
 
-		setWorkflowName({ newName: workflowData.name, setStateDirty: false });
-
 		return workflowData;
 	}
 
@@ -176,7 +159,10 @@ export function useWorkflowState() {
 		setActiveExecutionId(undefined);
 		workflowStateStore.executingNode.clearNodeExecutionQueue();
 		ws.executionWaitingForWebhook = false;
-		documentTitle.setDocumentTitle(ws.workflowName, 'IDLE');
+		const workflowDocumentStore = useWorkflowDocumentStore(
+			createWorkflowDocumentId(ws.workflow.id),
+		);
+		documentTitle.setDocumentTitle(workflowDocumentStore.name, 'IDLE');
 		ws.workflowExecutionStartedData = undefined;
 
 		// TODO(ckolb): confirm this works across files?
@@ -208,8 +194,13 @@ export function useWorkflowState() {
 		setWorkflowExecutionData(null);
 		resetAllNodesIssues();
 
+		// Reset name via document store (triggers onNameChange → updates workflowObject.name)
+		const workflowDocumentStore = useWorkflowDocumentStore(
+			createWorkflowDocumentId(ws.workflow.id),
+		);
+		workflowDocumentStore.setName('');
+
 		setWorkflowId('');
-		setWorkflowName({ newName: '', setStateDirty: false });
 		// Settings are managed by workflowDocumentStore; reset the runtime Workflow instance directly
 		ws.workflowObject.setSettings({ ...DEFAULT_SETTINGS });
 		// Note: Tags are now managed by workflowDocumentStore, which is disposed during reset
@@ -271,7 +262,10 @@ export function useWorkflowState() {
 
 		if (changed) {
 			uiStore.markStateDirty();
-			ws.nodeMetadata[name].parametersLastUpdatedAt = Date.now();
+			const workflowDocumentStore = useWorkflowDocumentStore(
+				createWorkflowDocumentId(ws.workflow.id),
+			);
+			workflowDocumentStore.touchParametersLastUpdatedAt(name);
 		}
 	}
 
@@ -322,7 +316,10 @@ export function useWorkflowState() {
 		const excludeKeys = ['position', 'notes', 'notesInFlow'];
 
 		if (changed && !excludeKeys.includes(updateInformation.key)) {
-			ws.nodeMetadata[ws.workflow.nodes[nodeIndex].name].parametersLastUpdatedAt = Date.now();
+			const workflowDocumentStore = useWorkflowDocumentStore(
+				createWorkflowDocumentId(ws.workflow.id),
+			);
+			workflowDocumentStore.touchParametersLastUpdatedAt(ws.workflow.nodes[nodeIndex].name);
 		}
 	}
 
@@ -343,18 +340,6 @@ export function useWorkflowState() {
 		const nodeIndex = ws.workflow.nodes.findIndex((node) => node.id === nodeId);
 		if (nodeIndex === -1) return false;
 		return updateNodeAtIndex(nodeIndex, nodeData);
-	}
-
-	/**
-	 * Reset parametersLastUpdatedAt to current timestamp for a node.
-	 * Used to mark a node as "dirty" when its parameters change.
-	 * @deprecated Use `workflowDocumentStore.resetParametersLastUpdatedAt()` instead.
-	 */
-	function resetParametersLastUpdatedAt(nodeName: string): void {
-		if (!ws.nodeMetadata[nodeName]) {
-			ws.nodeMetadata[nodeName] = { pristine: true };
-		}
-		ws.nodeMetadata[nodeName].parametersLastUpdatedAt = Date.now();
 	}
 
 	/** @deprecated Use `workflowDocumentStore.updateNodeProperties()` instead. */
@@ -424,7 +409,6 @@ export function useWorkflowState() {
 		setWorkflowExecutionData,
 		resetAllNodesIssues,
 		setWorkflowId,
-		setWorkflowName,
 		setWorkflowProperty,
 		setActiveExecutionId,
 		getNewWorkflowData,
@@ -441,7 +425,6 @@ export function useWorkflowState() {
 		updateNodeAtIndex,
 		updateNodeById,
 		updateNodeProperties,
-		resetParametersLastUpdatedAt,
 
 		// reexport
 		executingNode: workflowStateStore.executingNode,

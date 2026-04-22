@@ -116,14 +116,19 @@ const firstLicensedRole = computed(
 	() => rolesStore.processedProjectRoles.find((role) => role.licensed)?.slug,
 );
 
-const projectMembersActions = computed<Array<UserAction<ProjectMemberData>>>(() => [
-	{
-		label: i18n.baseText('projects.settings.table.row.removeUser'),
-		value: 'remove',
-		guard: (member) =>
-			member.id !== usersStore.currentUser?.id && member.role !== 'project:personalOwner',
-	},
-]);
+const projectMembersActions = computed<Array<UserAction<ProjectMemberData>>>(() => {
+	if (isProjectRoleProvisioningEnabled.value || isExpressionMappingEnabled.value) {
+		return [];
+	}
+	return [
+		{
+			label: i18n.baseText('projects.settings.table.row.removeUser'),
+			value: 'remove',
+			guard: (member) =>
+				member.id !== usersStore.currentUser?.id && member.role !== 'project:personalOwner',
+		},
+	];
+});
 
 const onAddMember = async (userId: string) => {
 	if (!projectsStore.currentProject) return;
@@ -494,8 +499,13 @@ const searchUsers = async (query: string) => {
 
 	isLoadingUsers.value = true;
 	try {
-		// If query is empty, load initial set of users, otherwise search
-		const filter = query.trim() ? { fullText: query } : undefined;
+		const projectId = projectsStore.currentProject?.id;
+		if (!projectId) {
+			userSearchResults.value = [];
+			return;
+		}
+		// List users in this project only (global /users requires user:create without projectId).
+		const filter = query.trim() ? { fullText: query, projectId } : { projectId };
 		await usersStore.fetchUsers({
 			take: 50,
 			filter,
@@ -528,6 +538,10 @@ onBeforeMount(async () => {
 
 const isProjectRoleProvisioningEnabled = computed(
 	() => userRoleProvisioningStore.provisioningConfig?.scopesProvisionProjectRoles || false,
+);
+
+const isExpressionMappingEnabled = computed(
+	() => userRoleProvisioningStore.provisioningConfig?.scopesUseExpressionMapping || false,
 );
 
 onMounted(async () => {
@@ -637,7 +651,7 @@ onMounted(async () => {
 							:remote-method="debouncedUserSearch"
 							:loading="isLoadingUsers"
 							@update:model-value="onAddMember"
-							:disabled="isProjectRoleProvisioningEnabled"
+							:disabled="isProjectRoleProvisioningEnabled || isExpressionMappingEnabled"
 						>
 							<template #prefix>
 								<N8nIcon icon="search" />
@@ -657,7 +671,17 @@ onMounted(async () => {
 							</template>
 						</N8nInput>
 					</div>
-					<div v-if="isProjectRoleProvisioningEnabled" class="mb-m">
+					<div v-if="isExpressionMappingEnabled" class="mb-m">
+						<N8nAlert
+							type="info"
+							:title="
+								i18n.baseText(
+									'settings.provisioningProjectRolesHandledByExpressionMapping.description',
+								)
+							"
+						/>
+					</div>
+					<div v-else-if="isProjectRoleProvisioningEnabled" class="mb-m">
 						<N8nAlert
 							type="info"
 							:title="
@@ -673,7 +697,7 @@ onMounted(async () => {
 							:current-user-id="usersStore.currentUser?.id"
 							:project-roles="rolesStore.processedProjectRoles"
 							:actions="projectMembersActions"
-							:can-edit-role="!isProjectRoleProvisioningEnabled"
+							:can-edit-role="!isProjectRoleProvisioningEnabled && !isExpressionMappingEnabled"
 							@update:options="onUpdateMembersTableOptions"
 							@update:role="onUpdateMemberRole"
 							@action="onMembersListAction"

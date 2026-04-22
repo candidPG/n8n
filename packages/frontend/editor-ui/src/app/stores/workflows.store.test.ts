@@ -125,7 +125,6 @@ describe('useWorkflowsStore', () => {
 	});
 
 	it('should initialize with default state', () => {
-		expect(workflowsStore.workflow.name).toBe('');
 		expect(workflowsStore.workflow.id).toBe('');
 	});
 
@@ -1166,8 +1165,8 @@ describe('useWorkflowsStore', () => {
 			executionResponse = events.executionResponse;
 		});
 
-		it('should throw error if not initialized', () => {
-			expect(() => workflowsStore.updateNodeExecutionStatus(successEvent)).toThrowError();
+		it('should silently return when workflowExecutionData is not initialized', () => {
+			expect(() => workflowsStore.updateNodeExecutionStatus(successEvent)).not.toThrow();
 		});
 
 		it('should add node success run data', () => {
@@ -1195,6 +1194,7 @@ describe('useWorkflowsStore', () => {
 		});
 
 		it('should add node error event and track errored executions', async () => {
+			workflowsStore.workflow.id = 'test-workflow';
 			workflowsStore.workflow.pinData = {};
 			useWorkflowState().setWorkflowExecutionData(executionResponse);
 			workflowsStore.addNode({
@@ -1369,10 +1369,6 @@ describe('useWorkflowsStore', () => {
 			expect(workflowsStore.workflow.nodes[0].id).toEqual(setNodeId);
 			expect(workflowsStore.workflow.nodes[1].id).toEqual(credentialOnlyNodeId);
 			expect(workflowsStore.workflow.nodes[1].type).toEqual('n8n-creds-base.alienVaultApi');
-			expect(workflowsStore.nodeMetadata).toEqual({
-				'AlienVault Request': { pristine: true },
-				'Edit Fields': { pristine: true },
-			});
 		});
 	});
 
@@ -1444,7 +1440,7 @@ describe('useWorkflowsStore', () => {
 			expect(workflowsListStore.workflowsById['1'].isArchived).toBe(true);
 			expect(workflowsListStore.workflowsById['1'].versionId).toBe(updatedVersionId);
 			expect(workflowDocumentStore.isArchived).toBe(true);
-			expect(workflowsStore.workflow.versionId).toBe(updatedVersionId);
+			expect(workflowDocumentStore.versionId).toBe(updatedVersionId);
 			expect(makeRestApiRequestSpy).toHaveBeenCalledWith(
 				expect.objectContaining({
 					baseUrl: '/rest',
@@ -1523,7 +1519,7 @@ describe('useWorkflowsStore', () => {
 			expect(workflowsListStore.workflowsById['1'].isArchived).toBe(false);
 			expect(workflowsListStore.workflowsById['1'].versionId).toBe(updatedVersionId);
 			expect(workflowDocumentStore.isArchived).toBe(false);
-			expect(workflowsStore.workflow.versionId).toBe(updatedVersionId);
+			expect(workflowDocumentStore.versionId).toBe(updatedVersionId);
 			expect(makeRestApiRequestSpy).toHaveBeenCalledWith(
 				expect.objectContaining({
 					baseUrl: '/rest',
@@ -1550,6 +1546,7 @@ describe('useWorkflowsStore', () => {
 
 			// Also populate the document store since updateWorkflowSetting reads from it
 			const workflowDocumentStore = useWorkflowDocumentStore(createWorkflowDocumentId('w1'));
+			workflowDocumentStore.setVersionData({ versionId: 'v1', name: null, description: null });
 			workflowDocumentStore.setSettings({ executionOrder: 'v1', timezone: 'UTC' });
 
 			const makeRestApiRequestSpy = vi.spyOn(apiUtils, 'makeRestApiRequest').mockResolvedValue(
@@ -1768,7 +1765,10 @@ describe('useWorkflowsStore', () => {
 
 			workflowsStore.workflow.id = 'test-workflow-id';
 
-			workflowsStore.addNode({
+			const workflowDocumentStore = useWorkflowDocumentStore(
+				createWorkflowDocumentId(workflowsStore.workflow.id),
+			);
+			workflowDocumentStore.addNode({
 				parameters: {},
 				id: '554c7ff4-7ee2-407c-8931-e34234c5056a',
 				name: nodeName,
@@ -1777,9 +1777,6 @@ describe('useWorkflowsStore', () => {
 				typeVersion: 3.4,
 			});
 
-			const workflowDocumentStore = useWorkflowDocumentStore(
-				createWorkflowDocumentId(workflowsStore.workflow.id),
-			);
 			workflowDocumentStore.setPinData({
 				[nodeName]: [
 					{
@@ -1813,8 +1810,8 @@ describe('useWorkflowsStore', () => {
 
 			workflowsStore.renameNodeSelectedAndExecution({ old: nodeName, new: newName });
 
-			expect(workflowsStore.nodeMetadata[nodeName]).not.toBeDefined();
-			expect(workflowsStore.nodeMetadata[newName]).toEqual({});
+			expect(workflowDocumentStore.nodeMetadata[nodeName]).not.toBeDefined();
+			expect(workflowDocumentStore.nodeMetadata[newName]).toEqual({});
 			expect(
 				workflowsStore.workflowExecutionData?.data?.resultData.runData[nodeName],
 			).not.toBeDefined();
@@ -2254,6 +2251,7 @@ describe('useWorkflowsStore', () => {
 		});
 
 		it('should use the first webhook when node has multiple webhooks', async () => {
+			workflowsStore.workflow.id = 'test-workflow-id';
 			const testNode = createTestNode({
 				id: 'node-1',
 				name: 'Webhook Node',

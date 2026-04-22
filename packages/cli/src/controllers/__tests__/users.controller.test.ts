@@ -4,6 +4,8 @@ import type { Response } from 'express';
 
 import type { EventService } from '@/events/event.service';
 import type { JwtService } from '@/services/jwt.service';
+import type { ProvisioningService } from '@/modules/provisioning.ee/provisioning.service.ee';
+import type { ProjectService } from '@/services/project.service.ee';
 import type { UrlService } from '@/services/url.service';
 import { NotFoundError } from '@/errors/response-errors/not-found.error';
 
@@ -14,6 +16,8 @@ describe('UsersController', () => {
 	const userRepository = mock<UserRepository>();
 	const jwtService = mock<JwtService>();
 	const urlService = mock<UrlService>();
+	const provisioningService = mock<ProvisioningService>();
+	const projectService = mock<ProjectService>();
 
 	const controller = new UsersController(
 		mock(),
@@ -30,10 +34,13 @@ describe('UsersController', () => {
 		mock(),
 		jwtService,
 		urlService,
+		projectService,
+		provisioningService,
 	);
 
 	beforeEach(() => {
 		jest.restoreAllMocks();
+		jest.clearAllMocks();
 	});
 
 	describe('changeGlobalRole', () => {
@@ -42,6 +49,7 @@ describe('UsersController', () => {
 				user: { id: '123' },
 			});
 			userRepository.findOne.mockResolvedValue(mock<User>({ id: '456' }));
+			provisioningService.isInstanceRoleManaged.mockResolvedValue(false);
 
 			await controller.changeGlobalRole(
 				request,
